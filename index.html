@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>dom-pong</title>
+  </head>
+  <body>
+    <h1>DOM-Pong</h1>
+    <div class="board">
+      <div class="scores">
+        <div class="player one">0</div>
+        <div class="player two">0</div>
+      </div>
+      <div class="ball"></div>
+      <div class="paddle one"></div>
+      <div class="paddle two"></div>
+    </div>
+  </body>
+  <style media="screen">
+    body { background: green; color: white; font-family: sans-serif }
+    h1 { text-align:center; font-size: 10vh; }
+    .board { position: relative; width: 90vmin; height: 60vmin; margin: auto; background: black; border-radius: 3vmin }
+    .scores { position: absolute: top: 0; left: 0; right: 0; }
+    .player { font-size: 5vmin; margin-top: 3vmin; }
+    .player.one { float: left; margin-left: 3vmin; }
+    .player.two { float: right; margin-right: 3vmin; }
+    .ball {
+      background: white; width: 3vmin; height: 3vmin; border-radius:3vmin;
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%)  }
+    .paddle { position: absolute; top:50%; width: 1.5vmin; height: 8vmin; background: white; transform:translate(0,-50%) }
+    .paddle.one { left:3vmin;  }
+    .paddle.two { right:3vmin; }
+  </style>
+  <script type="text/javascript">
+    var board   = document.querySelector('.board')
+    var paddle1 = document.querySelector('.paddle.one')
+    var paddle2 = document.querySelector('.paddle.two')
+    var score1  = document.querySelector('.player.one')
+    var score2  = document.querySelector('.player.two')
+    var ball    = document.querySelector('.ball')
+
+    function controlsFor(paddle,keys){
+      let halbesPaddle = paddle.offsetHeight / 2
+      document.addEventListener('keydown',(e)=>{
+        let limit = board.offsetHeight;
+        let pos   = paddle.offsetTop;
+        switch (e.key){
+          case keys[0]: pos -= 10; break;
+          case keys[1]: pos += 10; break;
+        }
+        pos = Math.max( halbesPaddle, Math.min( limit - halbesPaddle, pos) );
+        paddle.style.top = pos + 'px';
+      })
+    }
+    controlsFor(paddle1,['q','a'])
+    controlsFor(paddle2,['o','l'])
+
+    ball.vx = 3;
+    ball.vy = 0;
+
+    function newRound(dir){
+      ball.vx = dir;
+      ball.vy = 0;
+      ball.style.left = (board.offsetWidth/2) + 'px';
+      ball.style.top  = (board.offsetHeight/2) + 'px';
+    }
+
+    function checkCollision(paddle,ball,offset){
+      let halbesPaddle = paddle.offsetHeight / 2
+      let posX  = paddle.offsetLeft;
+      let posY  = paddle.offsetTop;
+      let ballX = ball.offsetLeft;
+      let ballY = ball.offsetTop;
+      let diffX = posX - ballX + offset;
+      let diffY = posY - ballY;
+
+      if ( Math.abs(diffX) < 10 && Math.abs(diffY) < halbesPaddle ){
+        ball.vx = -ball.vx
+        if ( diffY >  5 ){ ball.vy += -Math.abs(diffY/10); }
+        if ( diffY < -5 ){ ball.vy +=  Math.abs(diffY/10); }
+      }
+
+      if (ballY < 0){
+        ball.vy =  Math.abs(ball.vy) }
+      if (ballY > board.offsetHeight){
+        ball.vy = -Math.abs(ball.vy) }
+
+      if (ballX < 0){
+        score2.innerText = parseInt(score2.innerText) + 1
+        newRound(1)
+      }
+      if (ballX > board.offsetWidth){
+        score1.innerText = parseInt(score1.innerText) + 1
+        newRound(-1)
+      }
+    }
+
+    var timer = setInterval(t=>{
+      checkCollision(paddle1,ball,7);
+      checkCollision(paddle2,ball,0);
+
+      let posX = ball.offsetLeft;
+      let posY = ball.offsetTop;
+      posX += ball.vx
+      posY += ball.vy
+      ball.style.left = posX + 'px';
+      ball.style.top  = posY + 'px';
+    },16)
+
+  </script>
+</html>
